@@ -1,10 +1,8 @@
 <template>
-  <div id="app">
-    <div class="container">
+  <div class="container">
       <span id="setup">{{setup}}</span>
       <span id="punchline">&nbsp;{{punchline}}</span>
-      <span id="btn" @click="tellJoke">{{buttonText}}</span>
-    </div>
+      <span id="btn" @click="tellJoke" :class="{'show': buttonShow}">{{buttonText}}</span>
   </div>
 </template>
 
@@ -21,46 +19,50 @@
         setup: '',
         punchline: '',
         voice: '',
-        buttonText: "Tell me a joke"
+        buttonText: "Tell me a joke",
+        buttonShow: false
       }
     },
     mounted(){
       if ('speechSynthesis' in window) {
         // LANGUAGE OF SPEECH IS THE LANG ATTRIBUTE ON THE HTML
         console.log("Speech accepted");
+
+        this.buttonShow = true;
       }else{
         console.log("Sorry, your browser doesn't support text to speech!");
       }
     },
     methods:{
-       tellJoke: function(){
-        //document.getElementsByClassName('fade').fadeOut(function(){
-           this.setup = "";
-           this.punchline = "";
-        //});
+      tellJoke: function(){
+
+        var data = this;
+
+        data.setup = "";
+        data.punchline = "";
 
         axios.get("https://official-joke-api.appspot.com/jokes/random")
-        .then((response => (
-            this.setup = response.data.setup,
-            this.punchline = response.data.punchline,
-            this.quoteUtterance = new SpeechSynthesisUtterance(this.setup),
-            this.personUtterance = new SpeechSynthesisUtterance(this.punchline),
-            this.quoteUtterance.voice = this.voice.voice,
-            this.personUtterance.voice = this.voice.voice,
-            this.quoteUtterance.rate = this.personUtterance.rate = 0.85,
-            //quoteUtterance.pitch = personUtterance.pitch = 1.1,
-            this.SYNTHESIS.speak(this.quoteUtterance),
-            this.SYNTHESIS.speak(this.personUtterance),
-            this.quoteUtterance.onstart = function(){
-              //document.getElementById('quote-setup').fadeIn(750);
-            },
-            this.personUtterance.onstart = function(){
-              //document.getElementById('quote-punchline').fadeIn(750);
-            },
-            this.personUtterance.onend = function(){
-              //document.getElementById('btn').fadeIn(1000);
+        .then((response => {
+            data.buttonShow = false;
+
+            data.setup = response.data.setup;
+            data.punchline = response.data.punchline;
+            data.quoteUtterance = new SpeechSynthesisUtterance(data.setup);
+            data.personUtterance = new SpeechSynthesisUtterance(data.punchline);
+            data.quoteUtterance.voice = data.voice.voice;
+            data.personUtterance.voice = data.voice.voice;
+            data.quoteUtterance.rate = data.personUtterance.rate = 0.75;
+            data.SYNTHESIS.speak(data.quoteUtterance);
+            data.SYNTHESIS.speak(data.personUtterance);
+            data.quoteUtterance.onstart = function(){
             }
-          )
+            data.personUtterance.onstart = function(){
+            }
+            data.personUtterance.onend = function(){
+              data.buttonShow = true;
+            }
+
+          }
         ));
       }
     }
@@ -96,6 +98,7 @@
     transform: translate(-50%, -50%);
     max-width: 70vw;
     letter-spacing: 5px;
+    font-style: italic;
   }
 
   #setup{
@@ -114,10 +117,14 @@
     padding: 8px 15px;
     color: black;
     font-size: 15px;
-    display: block;
+    display: none;
     width: fit-content;
     margin: 0 auto;
     font-weight: 500;
     margin-top: 50px;
+  }
+
+  #btn.show{
+    display: block;
   }
 </style>
