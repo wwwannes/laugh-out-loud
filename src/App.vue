@@ -16,7 +16,6 @@
     data () {
       return {
         SYNTHESIS: window.speechSynthesis,
-        VOICES: null,
         quoteUtterance: '',
         personUtterance: '',
         setup: '',
@@ -27,9 +26,10 @@
     },
     mounted(){
       if ('speechSynthesis' in window) {
-        alert("Speech accepted")
+        // LANGUAGE OF SPEECH IS THE LANG ATTRIBUTE ON THE HTML
+        console.log("Speech accepted");
       }else{
-        alert("Sorry, your browser doesn't support text to speech!");
+        console.log("Sorry, your browser doesn't support text to speech!");
       }
     },
     methods:{
@@ -38,15 +38,6 @@
            this.setup = "";
            this.punchline = "";
         //});
-
-         // GET THE FEMALE UK VOICE
-         this.VOICES = this.SYNTHESIS.getVoices()
-              .map(function (voice) {
-                //document.getElementById('btn').fadeIn("slow");
-                return { voice: voice, name: voice.name, lang: voice.lang.toUpperCase() }
-          });
-
-         this.voice = this.VOICES[71];
 
          axios.get("https://official-joke-api.appspot.com/jokes/random")
          .then((response => (
