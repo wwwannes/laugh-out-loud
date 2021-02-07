@@ -24,26 +24,21 @@
     data () {
       return {
         SYNTHESIS: window.speechSynthesis,
-        quoteUtterance: '',
-        personUtterance: '',
         setupText: [],
         setupAnimating: false,
         setupAnimated: false,
         punchlineText: [],
         punchlineAnimating: false,
         punchlineAnimated: false,
-        voice: '',
         buttonShow: false
       }
     },
     mounted(){
       if ('speechSynthesis' in window) {
         // LANGUAGE OF SPEECH IS THE LANG ATTRIBUTE ON THE HTML
-        console.log("Speech accepted");
-
         this.buttonShow = true;
       }else{
-        console.log("Sorry, your browser doesn't support text to speech!");
+        alert("Sorry, your browser doesn't support text to speech!");
       }
     },
     methods:{
@@ -54,7 +49,7 @@
         }
       },
       tellJoke: function(){
-        var data = this;
+        var data = this; // Save this in new variable to make it accessable in the onstart and onend functions
         
         data.buttonShow = false;
 
@@ -71,23 +66,21 @@
             data.setupText = response.data.setup.split(""); // For letter animation
             data.punchlineText = response.data.punchline.split(""); // For letter animation
 
-            data.quoteUtterance = new SpeechSynthesisUtterance(response.data.setup);
-            data.personUtterance = new SpeechSynthesisUtterance(response.data.punchline);
-            data.quoteUtterance.voice = data.voice.voice;
-            data.personUtterance.voice = data.voice.voice;
-            data.quoteUtterance.rate = data.personUtterance.rate = 0.75;
-            data.SYNTHESIS.speak(data.quoteUtterance);
-            data.SYNTHESIS.speak(data.personUtterance);
+            const quoteUtterance = new SpeechSynthesisUtterance(response.data.setup);
+            const personUtterance = new SpeechSynthesisUtterance(response.data.punchline);
+            quoteUtterance.rate = personUtterance.rate = 0.75;
+            data.SYNTHESIS.speak(quoteUtterance);
+            data.SYNTHESIS.speak(personUtterance);
             
-            data.quoteUtterance.onstart = function(){
+            quoteUtterance.onstart = function(){
               data.setupAnimating = true;
             }
-            data.personUtterance.onstart = function(){
+            personUtterance.onstart = function(){
               data.setupAnimating = false;
               data.punchlineAnimating = true;
               data.setupAnimated = true;
             }
-            data.personUtterance.onend = function(){
+            personUtterance.onend = function(){
               data.buttonShow = true;
               data.punchlineAnimating = false;
               data.punchlineAnimated = true;
