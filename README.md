@@ -17,4 +17,4 @@ npm run serve
 npm run build
 ```
 
-[Joke API] (https://github.com/15Dkatz/official_joke_api)
+Joke API - https://github.com/15Dkatz/official_joke_api
