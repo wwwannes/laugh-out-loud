@@ -1,4 +1,6 @@
-# laugh-out-loud
+# Laugh Out Loud
+A small project where random jokes get told to you by your computer.
+We can all use a laugh every now and then.
 
 ## Project setup
 ```
@@ -15,5 +17,4 @@ npm run serve
 npm run build
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+[Joke API] (https://github.com/15Dkatz/official_joke_api)
