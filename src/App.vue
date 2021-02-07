@@ -1,8 +1,18 @@
 <template>
   <div class="container">
-      <span id="setup">{{setup}}</span>
-      <span id="punchline">&nbsp;{{punchline}}</span>
-      <span id="btn" @click="tellJoke" :class="{'show': buttonShow}">{{buttonText}}</span>
+      <div class="text-wrapper">
+        <div id="setup" class="cascading-text--fold" :class="{animate : setupAnimating, animated: setupAnimated}">
+          <span class="cascading-text__letter" v-for="(letter, index) in setupText" :style="delay(index)" :key="index">
+            <div style="width: 15px" v-if="letter === ' '"></div>{{letter}}
+          </span>
+        </div>
+        <div id="punchline" class="cascading-text--fold" :class="{animate : punchlineAnimating, animated: punchlineAnimated}">
+          <span class="cascading-text__letter" v-for="(letter, index) in punchlineText" :style="delay(index)" :key="index">
+            <div style="width: 15px" v-if="letter === ' '"></div>{{letter}}
+          </span>
+        </div>
+      </div>
+      <span id="btn" @click="tellJoke" :class="{'show': buttonShow}">Tell me a joke</span>
   </div>
 </template>
 
@@ -16,10 +26,13 @@
         SYNTHESIS: window.speechSynthesis,
         quoteUtterance: '',
         personUtterance: '',
-        setup: '',
-        punchline: '',
+        setupText: [],
+        setupAnimating: false,
+        setupAnimated: false,
+        punchlineText: [],
+        punchlineAnimating: false,
+        punchlineAnimated: false,
         voice: '',
-        buttonText: "Tell me a joke",
         buttonShow: false
       }
     },
@@ -34,34 +47,51 @@
       }
     },
     methods:{
+      delay(index) { /* Show each letter one by one */
+        return {
+          "-webkit-animation-delay": `${0.05 * index}s`,
+          "animation-delay": `${0.05 * index}s`
+        }
+      },
       tellJoke: function(){
-
         var data = this;
+        
+        data.buttonShow = false;
 
-        data.setup = "";
-        data.punchline = "";
+        data.setupText = [];
+        data.punchlineText = [];
+
+        data.setupAnimating = false;
+        data.punchlineAnimating = false;
+        data.setupAnimated = false;
+        data.punchlineAnimated = false;
 
         axios.get("https://official-joke-api.appspot.com/jokes/random")
         .then((response => {
-            data.buttonShow = false;
+            data.setupText = response.data.setup.split(""); // For letter animation
+            data.punchlineText = response.data.punchline.split(""); // For letter animation
 
-            data.setup = response.data.setup;
-            data.punchline = response.data.punchline;
-            data.quoteUtterance = new SpeechSynthesisUtterance(data.setup);
-            data.personUtterance = new SpeechSynthesisUtterance(data.punchline);
+            data.quoteUtterance = new SpeechSynthesisUtterance(response.data.setup);
+            data.personUtterance = new SpeechSynthesisUtterance(response.data.punchline);
             data.quoteUtterance.voice = data.voice.voice;
             data.personUtterance.voice = data.voice.voice;
             data.quoteUtterance.rate = data.personUtterance.rate = 0.75;
             data.SYNTHESIS.speak(data.quoteUtterance);
             data.SYNTHESIS.speak(data.personUtterance);
+            
             data.quoteUtterance.onstart = function(){
+              data.setupAnimating = true;
             }
             data.personUtterance.onstart = function(){
+              data.setupAnimating = false;
+              data.punchlineAnimating = true;
+              data.setupAnimated = true;
             }
             data.personUtterance.onend = function(){
               data.buttonShow = true;
+              data.punchlineAnimating = false;
+              data.punchlineAnimated = true;
             }
-
           }
         ));
       }
@@ -73,7 +103,8 @@
   @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@500;900&display=swap');
 
   body{
-    background: black;
+    -webkit-animation: color-change-5x 20s linear infinite alternate both;
+	  animation: color-change-5x 20s linear infinite alternate both;
   }
 
   #app {
@@ -112,8 +143,28 @@
     color: white;
   }
 
+  .cascading-text__letter{
+    transform-origin: bottom;
+    transform: rotateX(90deg);
+    width: fit-content;
+    display: inline-block;
+    transform-style: preserve-3d;
+    -webkit-animation-duration: 0.5s;
+    animation-duration: 0.5s;
+    -webkit-animation-fill-mode: forwards;
+    animation-fill-mode: forwards;
+  }
+  .animate .cascading-text__letter{
+    -webkit-animation-name: fold;
+    animation-name: fold;
+  }
+  .animated .cascading-text__letter{
+    transform: rotateX(0);
+  }
+
   #btn{
     background: white;
+    border: 2px solid white;
     padding: 8px 15px;
     color: black;
     font-size: 15px;
@@ -122,9 +173,61 @@
     margin: 0 auto;
     font-weight: 500;
     margin-top: 50px;
+    cursor: pointer;
+  }
+  #btn:hover{
+    background: transparent;
+    color: white;
   }
 
   #btn.show{
     display: block;
   }
+
+  @-webkit-keyframes fold{
+    100% {
+      transform: rotateX(0);
+    }
+  }
+  @keyframes fold{
+    100% {
+      transform: rotateX(0);
+    }
+  }
+  
+  @-webkit-keyframes color-change-5x {
+    0% {
+      background: #355070;
+    }
+    25% {
+      background: #6d597a;
+    }
+    50% {
+      background: #b56576;
+    }
+    75% {
+      background: #e56b6f;
+    }
+    100% {
+      background: #eaac8b;
+    }
+  }
+  @keyframes color-change-5x {
+    0% {
+      background: #355070;
+    }
+    25% {
+      background: #6d597a;
+    }
+    50% {
+      background: #b56576;
+    }
+    75% {
+      background: #e56b6f;
+    }
+    100% {
+      background: #eaac8b;
+    }
+  }
+
 </style>
